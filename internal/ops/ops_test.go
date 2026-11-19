@@ -263,3 +263,42 @@ func TestEveryIntegerEnumIsDocumented(t *testing.T) {
 		}
 	}
 }
+
+func TestCurrencyWarnings(t *testing.T) {
+	single := []byte(`{"info":{"domainName":"a.com","currency":"USD"}}`)
+	bulk := []byte(`{"infos":[{"domainName":"a.com","currency":"USD"},{"domainName":"a.com.tr","currency":"TRY"},{"domainName":"b.io","currency":"USD"}]}`)
+	cases := []struct {
+		name  string
+		in    Input
+		body  []byte
+		want  int
+		has   []string
+		lacks []string
+	}{
+		{"mismatch", Input{"currency": "TRY"}, single, 1, []string{"TRY", "USD", "a.com"}, nil},
+		{"match ignoring case", Input{"currency": "usd"}, single, 0, nil, nil},
+		{"no currency asked", Input{}, single, 0, nil, nil},
+		{"no currency returned", Input{"currency": "TRY"}, []byte(`{"info":{"domainName":"a.com"}}`), 0, nil, nil},
+		{"null currency", Input{"currency": "TRY"}, []byte(`{"info":{"domainName":"a.com","currency":null}}`), 0, nil, nil},
+		{"bulk mixed", Input{"currency": "TRY"}, bulk, 1, []string{"a.com,", "b.io", "USD"}, []string{"a.com.tr"}},
+		{"not json", Input{"currency": "TRY"}, []byte(`oops`), 0, nil, nil},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := currencyWarnings(c.in, c.body)
+			if len(got) != c.want {
+				t.Fatalf("got %d warnings %q, want %d", len(got), got, c.want)
+			}
+			for _, s := range c.has {
+				if !strings.Contains(got[0], s) {
+					t.Errorf("warning %q lacks %q", got[0], s)
+				}
+			}
+			for _, s := range c.lacks {
+				if strings.Contains(got[0], s) {
+					t.Errorf("warning %q should not mention %q", got[0], s)
+				}
+			}
+		})
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/url"
 	"sort"
 	"strconv"
@@ -444,6 +445,7 @@ func (a *App) readJSONArg(flag, s string) (any, error) {
 
 // runOperation validates, guards, sends and renders one operation.
 func (a *App) runOperation(ctx context.Context, op *ops.Operation, in ops.Input, all bool) error {
+	orig := maps.Clone(in) // Prepare hooks may consume inputs that Warnings needs
 	req, err := op.BuildRequest(in)
 	if err != nil {
 		return explainPositional(op, err)
@@ -489,6 +491,11 @@ func (a *App) runOperation(ctx context.Context, op *ops.Operation, in ops.Input,
 	}
 	if resp != nil && resp.Quota != nil && resp.Quota.Delay >= 1 && !a.machineOutput() {
 		a.warn(fmt.Sprintf("the API slowed this request down by %.1fs (quota %s %.0f/%.0f); it recovers within %.0fs", resp.Quota.Delay, resp.Quota.Scope, resp.Quota.Used, resp.Quota.Limit, resp.Quota.Reset))
+	}
+	if op.Warnings != nil {
+		for _, w := range op.Warnings(orig, raw) {
+			a.warn(w)
+		}
 	}
 	return a.render(raw, opts)
 }

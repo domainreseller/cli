@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `domain search` and `domain bulk-search` warn on stderr when the API prices a domain in a different currency than `--currency` asked for (it answers in each TLD's own currency, e.g. USD for .com and TRY for .com.tr). The JSON on stdout is unchanged.
+
 ### Fixed
 
 - The install scripts can update dna while it is running (for example as an MCP server started by Claude, Cursor or another AI app). On Windows the running `dna.exe` is renamed out of the way instead of failing with "the file is being used by another process"; on Linux and macOS the new binary is renamed over the old one instead of failing with "Text file busy".

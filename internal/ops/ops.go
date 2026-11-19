@@ -115,6 +115,9 @@ type Operation struct {
 	// TableRow adds derived, human-friendly columns (e.g. prices) to each
 	// list row in table output. JSON output is never changed.
 	TableRow func(row map[string]any)
+	// Warnings inspects a successful response and returns notes for stderr.
+	// stdout is never changed.
+	Warnings func(in Input, result []byte) []string
 	Aliases  []string
 
 	spec *openapi.Operation

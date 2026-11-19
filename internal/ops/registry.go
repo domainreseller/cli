@@ -161,9 +161,10 @@ var registry = []*Operation{
 	// ------------------------------------------------------------------ domain
 	{
 		ID: "domain.search", Method: "POST", Path: "/api/v1/domains/search", Safety: Read, Args: domainArg,
+		Warnings:    currencyWarnings,
 		Summary:     "Check if a domain is available and get its price",
 		Description: "Returns availability (info.status), price, currency, premium flag and whether registry documents are required. Rate limit: 2 searches/second.",
-		Fields:      map[string]Field{"domainName": {Required: true}, "currency": {Help: "Price currency, e.g. USD or TRY"}},
+		Fields:      map[string]Field{"domainName": {Required: true}, "currency": {Help: "Price currency, e.g. USD or TRY. The API may answer in the TLD's own currency instead (check currency in the result)"}},
 		Examples:    []Example{{"dna domain search example.com", ""}, {"dna domain search example.com.tr --currency TRY -o json", ""}},
 	},
 	{
@@ -171,9 +172,10 @@ var registry = []*Operation{
 		Summary: "Check availability and prices of several domains at once",
 		Virtual: []Virtual{
 			{Key: "domains", Type: "strings", Required: true, Help: "Domain names to check"},
-			{Key: "currency", Type: "string", Help: "Price currency, e.g. USD or TRY"},
+			{Key: "currency", Type: "string", Help: "Price currency, e.g. USD or TRY. The API may answer in the TLD's own currency instead (check currency in the result)"},
 		},
 		Prepare:  prepareBulkSearch,
+		Warnings: currencyWarnings,
 		Columns:  []string{"domainName", "status", "price", "currency", "period", "isPremium", "isDocumentRequired", "reason"},
 		Examples: []Example{{"dna domain bulk-search example.com example.net example.org", ""}},
 	},

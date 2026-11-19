@@ -23,7 +23,7 @@ Every input can also be given as JSON with --body (inline, @file or - for stdin)
 | flag | type | description |
 |---|---|---|
 | `--domains` | strings | Domain names to check (repeatable) (required; or argument 1 &lt;domains&gt;) |
-| `--currency` | string | Price currency, e.g. USD or TRY |
+| `--currency` | string | Price currency, e.g. USD or TRY. The API may answer in the TLD's own currency instead (check currency in the result) |
 | `-d`, `--body` | string | Full input as JSON: inline, @file, or - to read stdin |
 
 **Examples**
@@ -624,7 +624,7 @@ Every input can also be given as JSON with --body (inline, @file or - for stdin)
 | flag | type | description |
 |---|---|---|
 | `--domain-name` | string | Domain name (required; or argument 1 &lt;domain&gt;) |
-| `--currency` | string | Price currency, e.g. USD or TRY |
+| `--currency` | string | Price currency, e.g. USD or TRY. The API may answer in the TLD's own currency instead (check currency in the result) |
 | `-d`, `--body` | string | Full input as JSON: inline, @file, or - to read stdin |
 
 **Examples**

@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -248,6 +249,51 @@ func prepareBulkSearch(in Input) error {
 	delete(in, "domains")
 	delete(in, "currency")
 	return nil
+}
+
+// currencyWarnings notes the domains a search priced in another currency than
+// the one asked for: the search endpoints answer in each TLD's own currency
+// (USD for .com, TRY for .com.tr) whatever "currency" says.
+func currencyWarnings(in Input, result []byte) []string {
+	want, _ := in["currency"].(string)
+	if want == "" {
+		return nil
+	}
+	type info struct {
+		DomainName string  `json:"domainName"`
+		Currency   *string `json:"currency"`
+	}
+	var body struct {
+		Info  *info  `json:"info"`
+		Infos []info `json:"infos"`
+	}
+	if json.Unmarshal(result, &body) != nil {
+		return nil
+	}
+	infos := body.Infos
+	if body.Info != nil {
+		infos = append(infos, *body.Info)
+	}
+	byCurrency := map[string][]string{}
+	for _, i := range infos {
+		if i.Currency == nil || *i.Currency == "" || strings.EqualFold(*i.Currency, want) {
+			continue
+		}
+		byCurrency[*i.Currency] = append(byCurrency[*i.Currency], i.DomainName)
+	}
+	if len(byCurrency) == 0 {
+		return nil
+	}
+	currencies := make([]string, 0, len(byCurrency))
+	for c := range byCurrency {
+		currencies = append(currencies, c)
+	}
+	sort.Strings(currencies)
+	parts := make([]string, len(currencies))
+	for i, c := range currencies {
+		parts[i] = strings.Join(byCurrency[c], ", ") + " in " + c
+	}
+	return []string{fmt.Sprintf("requested %s but the API priced %s; search prices use each TLD's own currency (dna product tlds --currency converts)", want, strings.Join(parts, " and "))}
 }
 
 func setDefault(in Input, key string, v any) {

@@ -399,3 +399,39 @@ func TestInteractiveConfirmation(t *testing.T) {
 		}
 	}
 }
+
+func TestSearchWarnsOnCurrencyMismatch(t *testing.T) {
+	api := newFakeAPI(t)
+	api.json("POST /api/v1/domains/search", `{"success":true,"info":{"domainName":"a.com","currency":"USD","status":"AVAILABLE"}}`)
+	r := run(t, api, nil, "", "domain", "search", "a.com", "--currency", "TRY", "-o", "json")
+	if r.code != 0 {
+		t.Fatalf("exit %d: %s", r.code, r.stderr)
+	}
+	if got := decode(t, r.stdout)["info"].(map[string]any)["currency"]; got != "USD" {
+		t.Errorf("stdout currency = %v, want the API's USD untouched", got)
+	}
+	lines := strings.Split(strings.TrimSpace(r.stderr), "\n")
+	if len(lines) != 1 {
+		t.Fatalf("stderr = %q, want one warning line", r.stderr)
+	}
+	w, _ := decode(t, lines[0])["warning"].(string)
+	if !strings.Contains(w, "TRY") || !strings.Contains(w, "USD") {
+		t.Errorf("warning = %q", w)
+	}
+}
+
+func TestBulkSearchWarnsOnCurrencyMismatch(t *testing.T) {
+	api := newFakeAPI(t)
+	api.json("POST /api/v1/domains/bulk-search", `{"success":true,"infos":[{"domainName":"a.com.tr","currency":"TRY"},{"domainName":"b.com","currency":"USD"}]}`)
+	r := run(t, api, nil, "", "domain", "bulk-search", "a.com.tr", "b.com", "--currency", "TRY", "-o", "json")
+	if r.code != 0 {
+		t.Fatalf("exit %d: %s", r.code, r.stderr)
+	}
+	w, _ := decode(t, strings.TrimSpace(r.stderr))["warning"].(string)
+	if !strings.Contains(w, "b.com") || strings.Contains(w, "a.com.tr") {
+		t.Errorf("warning = %q, want b.com only", w)
+	}
+	if body := api.last().Body; !strings.Contains(body, `"currency":"TRY"`) {
+		t.Errorf("body = %s, want currency still sent", body)
+	}
+}

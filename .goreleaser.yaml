@@ -34,6 +34,24 @@ archives:
       - LICENSE
       - CHANGELOG.md
 
+nfpms:
+  - id: dna
+    ids: [dna]
+    package_name: dna
+    # No version in the name, so releases/latest/download/<name> always works.
+    # Keep in sync with the README install section.
+    file_name_template: "dna_{{ .Os }}_{{ .Arch }}"
+    vendor: Domain Name API
+    homepage: https://github.com/domainreseller/cli
+    maintainer: Domain Name API
+    description: Domain Name API command line client and MCP server.
+    license: Apache-2.0
+    formats: [deb, rpm]
+    bindir: /usr/bin
+    contents:
+      - src: LICENSE
+        dst: /usr/share/licenses/dna/LICENSE
+
 checksum:
   name_template: checksums.txt
 

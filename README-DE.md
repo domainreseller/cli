@@ -54,6 +54,15 @@
 curl -fsSL https://raw.githubusercontent.com/domainreseller/cli/main/scripts/install.sh | sh
 ```
 
+**Fedora / RHEL · Debian / Ubuntu**
+
+```bash
+# Fedora / RHEL
+sudo dnf install https://github.com/domainreseller/cli/releases/latest/download/dna_linux_amd64.rpm
+# Debian / Ubuntu
+curl -fsSLO https://github.com/domainreseller/cli/releases/latest/download/dna_linux_amd64.deb && sudo apt install ./dna_linux_amd64.deb
+```
+
 **Windows (PowerShell)**
 
 ```powershell
@@ -75,6 +84,8 @@ Wählen Sie Ihr Archiv im [neuesten Release](https://github.com/domainreseller/c
 | Betriebssystem | x64 | ARM |
 |---|---|---|
 | Linux | `dna_<version>_linux_amd64.tar.gz` | `dna_<version>_linux_arm64.tar.gz` |
+| Linux (.rpm) | `dna_linux_amd64.rpm` | `dna_linux_arm64.rpm` |
+| Linux (.deb) | `dna_linux_amd64.deb` | `dna_linux_arm64.deb` |
 | macOS | `dna_<version>_darwin_amd64.tar.gz` | `dna_<version>_darwin_arm64.tar.gz` |
 | Windows | `dna_<version>_windows_amd64.zip` | `dna_<version>_windows_arm64.zip` |
 

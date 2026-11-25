@@ -62,9 +62,16 @@ func (e *APIError) Error() string {
 	return sb.String()
 }
 
+// internalErrorCode is the API's generic "An internal error has occurred"
+// code. The API sometimes sends it with a 404 status, which must not be read
+// as "resource does not exist".
+const internalErrorCode = "Dna.DomainService:General:10001"
+
 // Kind classifies the error.
 func (e *APIError) Kind() ErrorKind {
 	switch {
+	case e.Code == internalErrorCode:
+		return KindServer
 	case e.StatusCode == http.StatusUnauthorized, e.StatusCode == http.StatusFound, e.StatusCode == http.StatusMovedPermanently:
 		return KindAuth
 	case e.StatusCode == http.StatusForbidden:
@@ -86,7 +93,7 @@ func (e *APIError) Kind() ErrorKind {
 // Retryable reports whether repeating the same request later may succeed.
 func (e *APIError) Retryable() bool {
 	k := e.Kind()
-	return k == KindRateLimited || (k == KindServer && e.StatusCode != http.StatusNotImplemented)
+	return k == KindRateLimited || (k == KindServer && e.StatusCode >= 500 && e.StatusCode != http.StatusNotImplemented)
 }
 
 // Hint returns a short, actionable suggestion for the error ("" if none).

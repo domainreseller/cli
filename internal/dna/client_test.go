@@ -96,6 +96,8 @@ func TestErrors(t *testing.T) {
 		{"abp validation", 400, "application/json", `{"error":{"code":"Dna:1018","message":"Invalid forward type","validationErrors":[{"message":"bad","members":["forwardType"]}]}}`, "Dna:1018", KindValidation, "Invalid forward type"},
 		{"abp boilerplate", 500, "application/json", `{"error":{"code":"Dna.X:9","message":"Exception of type 'Volo.Abp.BusinessException' was thrown.","details":"Dna Domain is locked at registry"}}`, "Dna.X:9", KindServer, "Domain is locked at registry"},
 		{"not found", 404, "", "", "HTTP_404", KindNotFound, "not found"},
+		{"domain not found", 404, "application/json", `{"error":{"code":"Dna.DomainService:Domain:10007","message":"The domain name you requested could not be found."}}`, "Dna.DomainService:Domain:10007", KindNotFound, "could not be found"},
+		{"internal error sent as 404", 404, "application/json", `{"error":{"code":"Dna.DomainService:General:10001","message":"An internal error has occurred. Please contact the system administrator."}}`, "Dna.DomainService:General:10001", KindServer, "internal error"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
